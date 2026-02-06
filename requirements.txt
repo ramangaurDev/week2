@@ -3,7 +3,7 @@
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 pydantic==2.5.3
-python-multipart==0.0.6
+python-multipart==0.0.22
 
 # Document processing
 bs4==0.0.2
@@ -18,7 +18,7 @@ opentelemetry-exporter-gcp-trace==1.6.0
 opentelemetry-exporter-gcp-monitoring==1.6.0a0
 
 # Google Cloud Platform
-google-cloud-aiplatform==1.40.0
+google-cloud-aiplatform==1.42.1
 google-cloud-storage==2.14.0
 google-cloud-logging==3.9.0
 google-cloud-firestore==2.14.0
@@ -43,7 +43,7 @@ datasets==2.16.1
 
 # LangGraph for stateful RAG workflows
 langgraph==0.0.20
-langchain-core==0.1.18
+langchain-core==0.3.81
 langchain-google-vertexai==0.1.0
 langchain==0.1.6
 

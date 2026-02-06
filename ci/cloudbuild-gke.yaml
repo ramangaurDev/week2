@@ -9,7 +9,7 @@ substitutions:
   _ARTIFACT_REGISTRY: us-central1-docker.pkg.dev/btoproject-486405-486604/chatbot-rag-images
 
 steps:
-  # Step 1: Install Python dependencies and run tests with coverage
+  # Step 1: Install Python dependencies and run tests with coverage (≥80% required)
   - name: 'python:3.11'
     id: 'backend-test'
     entrypoint: 'bash'
@@ -18,7 +18,7 @@ steps:
       - |
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-asyncio
-        pytest --cov=app --cov-report=xml --cov-report=term --cov-fail-under=70
+        pytest --cov=app --cov-report=xml --cov-report=term --cov-fail-under=80 --cov-branch
     dir: '.'
     waitFor: ['-']
 
@@ -31,7 +31,7 @@ steps:
       - 'echo "SonarQube scan skipped - configure SONAR_TOKEN to enable"'
     waitFor: ['backend-test']
 
-  # Step 3: Security scanning with Trivy (non-blocking)
+  # Step 3: Security scanning with Trivy (BLOCKING on Critical/High - Required)
   - name: 'aquasec/trivy:latest'
     id: 'security-scan-backend'
     args:
@@ -39,7 +39,7 @@ steps:
       - '--severity'
       - 'HIGH,CRITICAL'
       - '--exit-code'
-      - '0'
+      - '1'
       - '--no-progress'
       - '.'
     waitFor: ['-']
