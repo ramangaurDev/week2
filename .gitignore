@@ -62,6 +62,20 @@ docs/GCP_END_TO_END_SETUP.md
 coverage.xml
 htmlcov/
 
-# GCP
-*.json
-!cloudbuild.yaml
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.nx/
+
+# GCP Service Account Keys (ignore only credentials JSON files)
+*-key.json
+*-credentials.json
+service-account*.json
+gcp-key*.json
+# But keep config files
+!package.json
+!package-lock.json
+!tsconfig*.json
+!angular.json
+!cloudbuild*.yaml

@@ -129,7 +129,9 @@ def get_oidc_validator() -> GoogleOIDCValidator:
     """Get or create OIDC validator instance."""
     global _validator
     if _validator is None:
-        # Prefer explicit env var so local dev can override,
+        # client_ids = os.getenv("GOOGLE_CLIENT_IDS", "").split(",")
+        # client_ids = [cid.strip() for cid in client_ids if cid.strip()]
+          # Prefer explicit env var so local dev can override,
         # otherwise fall back to Secret Manager value configured in GCP.
         client_ids_env = os.getenv("GOOGLE_CLIENT_IDS", "")
         client_ids = [cid.strip() for cid in client_ids_env.split(",") if cid.strip()]
