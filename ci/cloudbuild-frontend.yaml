@@ -1,0 +1,171 @@
+# Frontend CI/CD Pipeline for Cloud Build
+# Builds Angular app and deploys to Cloud Storage + Cloud CDN
+
+steps:
+  # Step 1: Install dependencies
+  - name: 'node:18'
+    id: 'install-dependencies'
+    entrypoint: 'npm'
+    args: ['ci']
+    dir: 'frontend'
+    waitFor: ['-']
+
+  # Step 2: Run linting
+  - name: 'node:18'
+    id: 'lint'
+    entrypoint: 'npm'
+    args: ['run', 'lint']
+    dir: 'frontend'
+    waitFor: ['install-dependencies']
+
+  # Step 3: Run unit tests with coverage
+  - name: 'node:18'
+    id: 'test'
+    entrypoint: 'npm'
+    args: ['run', 'test:ci']
+    dir: 'frontend'
+    env:
+      - 'CHROME_BIN=/usr/bin/google-chrome'
+    waitFor: ['install-dependencies']
+
+  # Step 4: SonarQube analysis for frontend
+  - name: 'sonarsource/sonar-scanner-cli:latest'
+    id: 'sonarqube-frontend'
+    args:
+      - '-Dsonar.projectKey=chatbot-rag-frontend'
+      - '-Dsonar.sources=frontend/src'
+      - '-Dsonar.tests=frontend/src'
+      - '-Dsonar.test.inclusions=**/*.spec.ts'
+      - '-Dsonar.typescript.lcov.reportPaths=frontend/coverage/lcov.info'
+      - '-Dsonar.host.url=${_SONAR_HOST_URL}'
+      - '-Dsonar.login=${_SONAR_TOKEN}'
+    waitFor: ['test']
+
+  # Step 5: Build production app
+  - name: 'node:18'
+    id: 'build-prod'
+    entrypoint: 'npm'
+    args: ['run', 'build:prod']
+    dir: 'frontend'
+    env:
+      - 'NODE_ENV=production'
+    waitFor: ['lint', 'sonarqube-frontend']
+
+  # Step 6: Inject environment variables into build
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'inject-config'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Replace placeholder with actual backend URL
+        BACKEND_URL="https://chatbot-rag-backend-${PROJECT_ID}.a.run.app"
+        
+        # Find and replace in JavaScript files
+        find frontend/dist -name "*.js" -type f -exec sed -i \
+          "s|https://chatbot-rag-api.example.com|$BACKEND_URL|g" {} +
+        
+        echo "Injected backend URL: $BACKEND_URL"
+    waitFor: ['build-prod']
+
+  # Step 7: Deploy to Cloud Storage
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: 'deploy-storage'
+    args:
+      - '-m'
+      - 'rsync'
+      - '-r'
+      - '-c'
+      - '-d'
+      - 'frontend/dist/chatbot-frontend/'
+      - 'gs://${PROJECT_ID}-frontend-${_ENVIRONMENT}/'
+    waitFor: ['inject-config']
+
+  # Step 8: Set cache control headers
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: 'set-cache-headers'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Set aggressive caching for static assets
+        gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" \
+          'gs://${PROJECT_ID}-frontend-${_ENVIRONMENT}/*.js' \
+          'gs://${PROJECT_ID}-frontend-${_ENVIRONMENT}/*.css'
+        
+        # Set no-cache for index.html (SPA entry point)
+        gsutil setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" \
+          'gs://${PROJECT_ID}-frontend-${_ENVIRONMENT}/index.html'
+    waitFor: ['deploy-storage']
+
+  # Step 9: Invalidate Cloud CDN cache
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'invalidate-cdn'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Get URL map name
+        URL_MAP=$(gcloud compute url-maps list --filter="name~frontend" --format="value(name)" --limit=1)
+        
+        if [ -n "$URL_MAP" ]; then
+          gcloud compute url-maps invalidate-cdn-cache $URL_MAP \
+            --path "/*" \
+            --async
+          echo "CDN cache invalidation initiated for $URL_MAP"
+        else
+          echo "No URL map found, skipping CDN invalidation"
+        fi
+    waitFor: ['set-cache-headers']
+
+  # Step 10: Smoke test deployed frontend
+  - name: 'curlimages/curl:latest'
+    id: 'smoke-test'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        # Wait for deployment to propagate
+        sleep 10
+        
+        # Test frontend is accessible
+        FRONTEND_URL="https://storage.googleapis.com/${PROJECT_ID}-frontend-${_ENVIRONMENT}/index.html"
+        
+        HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" $FRONTEND_URL)
+        
+        if [ $HTTP_CODE -eq 200 ]; then
+          echo "✅ Frontend smoke test passed (HTTP $HTTP_CODE)"
+          exit 0
+        else
+          echo "❌ Frontend smoke test failed (HTTP $HTTP_CODE)"
+          exit 1
+        fi
+    waitFor: ['invalidate-cdn']
+
+# Substitutions
+substitutions:
+  _ENVIRONMENT: 'production'
+  _SONAR_HOST_URL: 'https://sonarcloud.io'
+  _SONAR_TOKEN: ''  # Set in Cloud Build trigger
+
+# Options
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+  
+timeout: '1800s'  # 30 minutes
+
+# Artifacts
+artifacts:
+  objects:
+    location: 'gs://${PROJECT_ID}-build-artifacts/frontend-builds/${BUILD_ID}/'
+    paths:
+      - 'frontend/dist/**'
+      - 'frontend/coverage/**'
+
+# Tags
+tags:
+  - 'frontend'
+  - 'angular'
+  - 'cloud-storage'
+  - 'cdn'

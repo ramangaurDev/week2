@@ -1,7 +1,7 @@
 
 #!/usr/bin/env bash
 set -euo pipefail
-PROJECT_ID=btoproject-486405
+PROJECT_ID=btoproject-486405-486604
 REGION=us-central1
 INDEX_ID=rag-index
 ENDPOINT_ID=rag-index-endpoint

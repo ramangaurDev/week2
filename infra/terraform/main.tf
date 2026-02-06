@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "google" {
-  project = "btoproject-486405"
+  project = "btoproject-486405-486604"
   region  = "us-central1"
 }
 
@@ -24,7 +24,7 @@ resource "google_project_service" "services" {
     "pubsub.googleapis.com",
     "cloudfunctions.googleapis.com",
   ])
-  project = "btoproject-486405"
+  project = "btoproject-486405-486604"
   service = each.key
   disable_on_destroy = false
 }
@@ -43,7 +43,7 @@ resource "google_project_iam_member" "roles" {
     storage_object    = "roles/storage.objectAdmin",
     secret_accessor   = "roles/secretmanager.secretAccessor",
   }
-  project = "btoproject-486405"
+  project = "btoproject-486405-486604"
   role    = each.value
   member  = "serviceAccount:${google_service_account.rag.email}"
 }

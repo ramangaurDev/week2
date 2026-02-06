@@ -23,7 +23,7 @@ class Config:
     
     def __init__(self):
         # GCP Configuration
-        self.PROJECT_ID = os.getenv("PROJECT_ID", "btoproject-486405")
+        self.PROJECT_ID = os.getenv("PROJECT_ID", "btoproject-486405-486604")
         self.REGION = os.getenv("REGION", "us-central1")
         self.ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
         
@@ -70,7 +70,7 @@ class Config:
     @property
     def secret_client(self):
         """Lazy initialization of Secret Manager client."""
-        if not SECRET_MANAGER_AVAILABLE:
+        if not SECRET_MANAGER_AVAILABLE or SecretManagerServiceClient is None:
             logger.warning("Secret Manager not available - running in local mode")
             return None
         if self._secret_client is None:

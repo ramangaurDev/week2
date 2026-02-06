@@ -48,6 +48,19 @@ logs/
 # Environment variables
 .env
 .env.local
+.env.production.local
+frontend/.env.local
+frontend/.env.production.local
+
+# Sensitive docs (contains actual credentials)
+docs/DEPLOYMENT_PROGRESS_LOG.md
+docs/GCP_COST_ESTIMATION.md
+docs/GCP_END_TO_END_SETUP.md
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
 
 # GCP
 *.json

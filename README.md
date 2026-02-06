@@ -162,20 +162,20 @@ gcloud run deploy rag-service \
 
 ```bash
 # Core GCP Configuration
-PROJECT_ID=btoproject-486405
+PROJECT_ID=btoproject-486405-486604
 REGION=us-central1
 ENVIRONMENT=production
 
 # Vertex AI Configuration
-VERTEX_INDEX_ID=projects/btoproject-486405/locations/us-central1/indexes/YOUR_INDEX_ID
-VERTEX_INDEX_ENDPOINT=projects/btoproject-486405/locations/us-central1/indexEndpoints/YOUR_ENDPOINT_ID
+VERTEX_INDEX_ID=projects/btoproject-486405-486604/locations/us-central1/indexes/YOUR_INDEX_ID
+VERTEX_INDEX_ENDPOINT=projects/btoproject-486405-486604/locations/us-central1/indexEndpoints/YOUR_ENDPOINT_ID
 DEPLOYED_INDEX_ID=rag-index-deployed
 MODEL_VARIANT=gemini-2.0-flash-001
 
 # Storage Configuration
 USE_FIRESTORE=true
 FIRESTORE_COLLECTION=rag_chunks
-GCS_BUCKET=btoproject-486405-rag-documents
+GCS_BUCKET=btoproject-486405-486604-rag-documents
 
 # Application Limits
 MAX_FILE_SIZE=10485760           # 10MB

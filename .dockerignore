@@ -17,9 +17,11 @@ ENV/
 *~
 
 # Testing
+tests/
 .pytest_cache/
 .coverage
 htmlcov/
+coverage.xml
 
 # Distribution / packaging
 dist/

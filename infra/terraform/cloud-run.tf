@@ -14,7 +14,7 @@ terraform {
 }
 
 locals {
-  project_id = "btoproject-486405"
+  project_id = "btoproject-486405-486604"
   region     = "us-central1"
   
   labels = {

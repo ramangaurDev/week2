@@ -17,14 +17,14 @@ terraform {
   }
   
   backend "gcs" {
-    bucket = "btoproject-486405-terraform-state"
+    bucket = "btoproject-486405-486604-terraform-state"
     prefix = "chatbot-rag/state"
   }
 }
 
 # Local variables
 locals {
-  project_id = "btoproject-486405"
+  project_id = "btoproject-486405-486604"
   region     = "us-central1"
   zone       = "us-central1-a"
   environment = "production"

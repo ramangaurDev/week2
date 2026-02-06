@@ -125,6 +125,19 @@ class SemanticChunker:
         for sentence in sentences:
             sent_len = len(sentence)
             
+            # If sentence itself exceeds max size, force split it
+            if sent_len > self.max_chunk_size:
+                # Finalize current chunk if any
+                if current_chunk:
+                    chunks.append(" ".join(current_chunk))
+                    current_chunk = []
+                    current_size = 0
+                
+                # Split the long sentence into max_chunk_size pieces
+                for i in range(0, sent_len, self.max_chunk_size):
+                    chunks.append(sentence[i:i + self.max_chunk_size])
+                continue
+            
             # If adding this sentence exceeds max size, finalize current chunk
             if current_size + sent_len > self.max_chunk_size and current_chunk:
                 chunks.append(" ".join(current_chunk))
