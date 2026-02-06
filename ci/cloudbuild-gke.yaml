@@ -89,81 +89,81 @@ steps:
       - '${_ARTIFACT_REGISTRY}/backend'
     waitFor: ['scan-backend-image', 'generate-sbom-backend']
 
-  # Step 8: Install frontend dependencies
-  - name: 'node:20'
-    id: 'frontend-install'
-    entrypoint: 'npm'
-    args: ['install']
-    dir: 'frontend'
-    waitFor: ['-']
+  # Step 8: Install frontend dependencies (DISABLED - frontend folder not in repo yet)
+  # - name: 'node:20'
+  #   id: 'frontend-install'
+  #   entrypoint: 'npm'
+  #   args: ['install']
+  #   dir: 'frontend'
+  #   waitFor: ['-']
 
-  # Step 9: Run frontend tests with coverage
-  - name: 'node:20'
-    id: 'frontend-test'
-    entrypoint: 'npm'
-    args: ['run', 'test:coverage']
-    dir: 'frontend'
-    waitFor: ['frontend-install']
+  # Step 9: Run frontend tests with coverage (DISABLED - frontend folder not in repo yet)
+  # - name: 'node:20'
+  #   id: 'frontend-test'
+  #   entrypoint: 'npm'
+  #   args: ['run', 'test:coverage']
+  #   dir: 'frontend'
+  #   waitFor: ['frontend-install']
 
-  # Step 10: Run frontend linting
-  - name: 'node:20'
-    id: 'frontend-lint'
-    entrypoint: 'npm'
-    args: ['run', 'lint']
-    dir: 'frontend'
-    waitFor: ['frontend-install']
+  # Step 10: Run frontend linting (DISABLED - frontend folder not in repo yet)
+  # - name: 'node:20'
+  #   id: 'frontend-lint'
+  #   entrypoint: 'npm'
+  #   args: ['run', 'lint']
+  #   dir: 'frontend'
+  #   waitFor: ['frontend-install']
 
-  # Step 11: SonarQube analysis for frontend (disabled - no token)
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'sonar-frontend'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - 'echo "SonarQube scan skipped - configure SONAR_TOKEN to enable"'
-    waitFor: ['frontend-test']
+  # Step 11: SonarQube analysis for frontend (DISABLED - frontend folder not in repo yet)
+  # - name: 'gcr.io/cloud-builders/gcloud'
+  #   id: 'sonar-frontend'
+  #   entrypoint: 'bash'
+  #   args:
+  #     - '-c'
+  #     - 'echo "SonarQube scan skipped - configure SONAR_TOKEN to enable"'
+  #   waitFor: ['frontend-test']
 
-  # Step 12: Build frontend
-  - name: 'node:20'
-    id: 'frontend-build'
-    entrypoint: 'npm'
-    args: ['run', 'build:prod']
-    dir: 'frontend'
-    waitFor: ['frontend-test', 'frontend-lint', 'sonar-frontend']
+  # Step 12: Build frontend (DISABLED - frontend folder not in repo yet)
+  # - name: 'node:20'
+  #   id: 'frontend-build'
+  #   entrypoint: 'npm'
+  #   args: ['run', 'build:prod']
+  #   dir: 'frontend'
+  #   waitFor: ['frontend-test', 'frontend-lint', 'sonar-frontend']
 
-  # Step 13: Build frontend Docker image
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-frontend'
-    args:
-      - 'build'
-      - '-t'
-      - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
-      - '-t'
-      - '${_ARTIFACT_REGISTRY}/frontend:latest'
-      - '-f'
-      - 'frontend/Dockerfile'
-      - './frontend'
-    waitFor: ['frontend-build']
+  # Step 13: Build frontend Docker image (DISABLED - frontend folder not in repo yet)
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'build-frontend'
+  #   args:
+  #     - 'build'
+  #     - '-t'
+  #     - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
+  #     - '-t'
+  #     - '${_ARTIFACT_REGISTRY}/frontend:latest'
+  #     - '-f'
+  #     - 'frontend/Dockerfile'
+  #     - './frontend'
+  #   waitFor: ['frontend-build']
 
-  # Step 14: Generate SBOM for frontend
-  - name: 'anchore/syft:latest'
-    id: 'generate-sbom-frontend'
-    args:
-      - 'packages'
-      - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
-      - '-o'
-      - 'spdx-json=frontend-sbom.json'
-    waitFor: ['build-frontend']
+  # Step 14: Generate SBOM for frontend (DISABLED - frontend folder not in repo yet)
+  # - name: 'anchore/syft:latest'
+  #   id: 'generate-sbom-frontend'
+  #   args:
+  #     - 'packages'
+  #     - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
+  #     - '-o'
+  #     - 'spdx-json=frontend-sbom.json'
+  #   waitFor: ['build-frontend']
 
-  # Step 15: Push frontend image
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-frontend'
-    args:
-      - 'push'
-      - '--all-tags'
-      - '${_ARTIFACT_REGISTRY}/frontend'
-    waitFor: ['generate-sbom-frontend']
+  # Step 15: Push frontend image (DISABLED - frontend folder not in repo yet)
+  # - name: 'gcr.io/cloud-builders/docker'
+  #   id: 'push-frontend'
+  #   args:
+  #     - 'push'
+  #     - '--all-tags'
+  #     - '${_ARTIFACT_REGISTRY}/frontend'
+  #   waitFor: ['generate-sbom-frontend']
 
-  # Step 16: Deploy to GKE
+  # Step 16: Deploy to GKE (backend only for now)
   - name: 'gcr.io/cloud-builders/gke-deploy'
     id: 'deploy-to-gke'
     args:
@@ -173,7 +173,7 @@ steps:
       - '--location=${_GKE_ZONE}'
       - '--project=${_PROJECT_ID}'
       - '--image=${_ARTIFACT_REGISTRY}/backend:$COMMIT_SHA'
-    waitFor: ['push-backend', 'push-frontend']
+    waitFor: ['push-backend']
 
   # Step 17: Verify deployment
   - name: 'gcr.io/cloud-builders/kubectl'
@@ -199,21 +199,21 @@ steps:
         python scripts/smoke_tests.py
     waitFor: ['verify-deployment']
 
-  # Step 19: Upload SBOM to Cloud Storage
+  # Step 19: Upload SBOM to Cloud Storage (backend only for now)
   - name: 'gcr.io/cloud-builders/gsutil'
     id: 'upload-sbom'
     args:
       - 'cp'
       - '*-sbom.json'
       - 'gs://${_PROJECT_ID}-sbom/$BUILD_ID/'
-    waitFor: ['generate-sbom-backend', 'generate-sbom-frontend']
+    waitFor: ['generate-sbom-backend']
 
-# Store images
+# Store images (backend only for now - frontend folder not in repo yet)
 images:
   - '${_ARTIFACT_REGISTRY}/backend:$COMMIT_SHA'
   - '${_ARTIFACT_REGISTRY}/backend:latest'
-  - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
-  - '${_ARTIFACT_REGISTRY}/frontend:latest'
+  # - '${_ARTIFACT_REGISTRY}/frontend:$COMMIT_SHA'
+  # - '${_ARTIFACT_REGISTRY}/frontend:latest'
 
 # Artifacts to save
 artifacts:
