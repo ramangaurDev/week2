@@ -71,7 +71,7 @@ class GCSDocumentStore:
                 blob.metadata = metadata
             
             # Upload
-            blob.upload_from_string(content)
+            blob.upload_from_string(content, content_type=content_type)
             
             gcs_uri = f"gs://{self.bucket.name}/{blob_name}"
             logger.info(f"Uploaded document", filename=filename, gcs_uri=gcs_uri)
