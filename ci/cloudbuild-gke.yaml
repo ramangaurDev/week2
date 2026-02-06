@@ -91,11 +91,25 @@ steps:
     waitFor: ['scan-backend-image', 'generate-sbom-backend']
 
   # Step 8: Install frontend dependencies
+  # Use npm install instead of npm ci since package-lock.json may not exist
   - name: 'node:20'
     id: 'frontend-install'
-    entrypoint: 'npm'
-    args: ['ci']
-    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        cd frontend
+        if [ ! -f package.json ]; then
+          echo "ERROR: package.json not found in frontend directory"
+          exit 1
+        fi
+        if [ -f package-lock.json ]; then
+          echo "Using npm ci (package-lock.json found)"
+          npm ci
+        else
+          echo "Using npm install (no package-lock.json found)"
+          npm install
+        fi
     waitFor: ['-']
 
   # Step 9: Run frontend tests with coverage (≥80% required)
