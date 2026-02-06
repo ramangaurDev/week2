@@ -12,6 +12,7 @@ from typing import Optional, Dict, Any
 from functools import lru_cache
 import time
 from app.logging_config import get_logger
+from app.config import config
 
 logger = get_logger(__name__)
 security = HTTPBearer()
@@ -128,8 +129,15 @@ def get_oidc_validator() -> GoogleOIDCValidator:
     """Get or create OIDC validator instance."""
     global _validator
     if _validator is None:
-        client_ids = os.getenv("GOOGLE_CLIENT_IDS", "").split(",")
-        client_ids = [cid.strip() for cid in client_ids if cid.strip()]
+        # Prefer explicit env var so local dev can override,
+        # otherwise fall back to Secret Manager value configured in GCP.
+        client_ids_env = os.getenv("GOOGLE_CLIENT_IDS", "")
+        client_ids = [cid.strip() for cid in client_ids_env.split(",") if cid.strip()]
+        if not client_ids:
+            # Secret name matches GCP setup: google-oauth-client-id
+            secret_client_id = config.get_secret("google-oauth-client-id")
+            if secret_client_id:
+                client_ids = [secret_client_id.strip()]
         _validator = GoogleOIDCValidator(client_ids)
     return _validator
 
