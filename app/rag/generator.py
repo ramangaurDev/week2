@@ -193,7 +193,10 @@ Answer (with citations):"""
                     # Try to fit a truncated version
                     remaining = char_budget - current_chars
                     if remaining > 200:  # Only if we have reasonable space
-                        compressed.append(ctx[:remaining] + "...")
+                        truncated = ctx[:remaining - 3] + "..."
+                        if current_chars + len(truncated) <= char_budget:
+                            compressed.append(truncated)
+                            current_chars += len(truncated)
                     break
             
             logger.info(

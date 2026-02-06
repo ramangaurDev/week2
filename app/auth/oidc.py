@@ -15,6 +15,7 @@ from app.logging_config import get_logger
 
 logger = get_logger(__name__)
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
 
 
 class GoogleOIDCValidator:
@@ -150,7 +151,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Security(security, auto_error=False),
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(security_optional),
     validator: GoogleOIDCValidator = Depends(get_oidc_validator)
 ) -> Optional[Dict[str, Any]]:
     """

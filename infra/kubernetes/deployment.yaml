@@ -29,21 +29,32 @@ spec:
           name: http
         env:
         - name: PROJECT_ID
-          value: "btoproject-486405"
+          value: "btoproject-486405-486604"
         - name: REGION
           value: "us-central1"
         - name: ENVIRONMENT
           value: "production"
         - name: REDIS_HOST
           valueFrom:
-            configMapKeyRef:
-              name: app-config
+            secretKeyRef:
+              name: app-secrets
               key: redis_host
         - name: REDIS_PORT
           valueFrom:
-            configMapKeyRef:
-              name: app-config
+            secretKeyRef:
+              name: app-secrets
               key: redis_port
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: redis_password
+        - name: REDIS_USE_AUTH
+          value: "true"
+        - name: REDIS_TTL_DAYS
+          value: "30"
+        - name: USE_FIRESTORE
+          value: "true"
         - name: VERTEX_LOCATION
           value: "us-central1"
         - name: MODEL_VARIANT
