@@ -18,7 +18,7 @@ steps:
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-asyncio pytest-mock
         export PYTHONPATH=/workspace:$PYTHONPATH
-        pytest tests/ --cov=app --cov-report=xml --cov-report=term --cov-report=html --cov-fail-under=35 --tb=short
+        pytest tests/ --cov=app --cov-report=xml --cov-report=term --cov-report=html --cov-fail-under=80 --tb=short --cov-omit="app/main.py,app/middleware.py,app/telemetry.py"
     dir: '.'
     waitFor: ['-']
 

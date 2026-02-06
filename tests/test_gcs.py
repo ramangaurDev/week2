@@ -53,6 +53,7 @@ class TestGCSDocumentStore:
         _, _, bucket_mock = mock_gcs_client
         blob_mock = Mock()
         blob_mock.public_url = "https://storage.googleapis.com/bucket/doc.pdf"
+        bucket_mock.name = "test-bucket"
         bucket_mock.blob.return_value = blob_mock
         
         store = GCSDocumentStore(project_id="test-project", bucket_name="test-bucket")
@@ -65,7 +66,8 @@ class TestGCSDocumentStore:
         )
         
         assert result is not None
-        assert "storage.googleapis.com" in result
+        assert result.startswith("gs://test-bucket/documents/")
+        assert "test.pdf" in result
         blob_mock.upload_from_string.assert_called_once_with(content, content_type="application/pdf")
     
     def test_upload_document_with_metadata(self, mock_gcs_client):

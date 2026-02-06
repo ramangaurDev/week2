@@ -100,10 +100,10 @@ class TestFirestoreChunkStore:
         
         # Mock count query result
         count_query_mock = Mock()
-        count_result_mock = Mock()
+        count_result_mock = MagicMock()
         count_obj_mock = Mock()
         count_obj_mock.value = 42
-        count_result_mock.__getitem__.return_value = [count_obj_mock]
+        count_result_mock.__getitem__ = Mock(return_value=[count_obj_mock])
         count_query_mock.get.return_value = count_result_mock
         
         collection_mock.count.return_value = count_query_mock
@@ -120,7 +120,7 @@ class TestFirestoreChunkStore:
         
         # Mock count query failure
         count_query_mock = Mock()
-        count_query_mock.get.side_effect = Exception("Aggregate not supported")
+        count_query_mock.get.side_effect = ValueError("Aggregate not supported")
         
         # Mock stream for fallback
         doc1 = Mock()

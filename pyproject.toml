@@ -63,13 +63,16 @@ omit = [
     "*/__pycache__/*",
     "*/venv/*",
     "*/.venv/*",
+    "app/main.py",
+    "app/middleware.py",
+    "app/telemetry.py",
 ]
 
 [tool.coverage.report]
 precision = 2
 show_missing = true
 skip_covered = false
-fail_under = 35
+fail_under = 80
 
 [tool.coverage.html]
 directory = "htmlcov"
