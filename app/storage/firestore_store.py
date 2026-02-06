@@ -121,7 +121,7 @@ class FirestoreChunkStore:
             result = query.get()
             return result[0][0].value
         except Exception as e:
-            logger.warning(f"Count failed, using manual count", error=e)
+            logger.warning(f"Count failed, using manual count", error=str(e))
             # Fallback to manual count
             try:
                 docs = self.collection.stream()
